@@ -37,6 +37,7 @@ NotYetstart:
 	$(APP) 2>&1 & echo $$! > $(PID)
 
 start: go-build
+	mkdir -p $(BIN_DIR)
 	mkdir -p $(LOG_DIR)
 	logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
 	$(APP) 2>&1 | tee --append $(LOG_FILE)
@@ -58,13 +59,13 @@ test:
 
 # reflex
 reflex:
-	mkdir -p bin
+	mkdir -p $(BIN_DIR)
 	git clone https://github.com/cespare/reflex.git --depth 1
-	cd reflex
+	cd $(ROOT_DIR)/reflex
 	go mod vendor
-	go build -v -x -mod vendor -o ../bin/reflex
-	cd ..
-	rm -rf reflex
+	go build -v -x -mod vendor -o $(BIN_DIR)/reflex
+	cd $(ROOT_DIR)
+	rm -rf $(ROOT_DIR)/reflex
 
 # targets not associated with files
 # let's go to reserve rules names
