@@ -1,6 +1,14 @@
-PID      = ./app.pid
+PID = ./app.pid
 GO_FILES = $(wildcard *.go)
-APP      = ./bin/exp-gin
+
+APP_NAME = exp-gin
+ROOT_DIR = $(CURDIR)
+BIN_DIR = $(ROOT_DIR)/bin
+APP = $(BIN_DIR)/$(APP_NAME)
+LOG_DIR = $(ROOT_DIR)/log
+LOG_FILE = $(LOG_DIR)/$(APP_NAME).log
+LOG_CONFIG = $(ROOT_DIR)/logrotate.conf
+LOG_STATUS = $(LOG_DIR)/status
 
 # check we have a couple of dependencies
 dependencies:
@@ -16,7 +24,6 @@ kill:
 
 # run formatting tool and build
 go-build: dependencies go-clean
-	echo "@@@@@ Doing go-build"
 	go mod vendor
 	go build -v -x -mod vendor -o $(APP)
 
@@ -24,10 +31,15 @@ NotYetbuild2: $(GO_FILES)
 	go build -o $(APP)
 
 # start
-start:
+NotYetstart:
 	echo "@@@@@ Doing start"
 	rm -f $(PID)
 	$(APP) 2>&1 & echo $$! > $(PID)
+
+start: go-build
+	mkdir -p $(LOG_DIR)
+	logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
+	$(APP) 2>&1 | tee --append $(LOG_FILE)
 
 #sh -c "$(APP) & echo $$! > $(PID)"
 
@@ -58,7 +70,6 @@ reflex:
 # let's go to reserve rules names
 .PHONY: start run restart kill reflex 
 
-run: start
-	echo "@@@@@ Doing run"
-	bin/reflex --start-service -d none -r '\.go$$' -R '^vendor/' -- make restart || make kill
+run:
+	bin/reflex --start-service -d none -r '\.go$$' -R '^vendor/' -R '^node_modules/' -- make start
 
