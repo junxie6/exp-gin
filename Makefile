@@ -1,18 +1,26 @@
+SHELL = /bin/bash
+
 PID = ./app.pid
 GO_FILES = $(wildcard *.go)
 
 APP_NAME = exp-gin
+
 ROOT_DIR = $(CURDIR)
 BIN_DIR = $(ROOT_DIR)/bin
 APP = $(BIN_DIR)/$(APP_NAME)
+
 LOG_DIR = $(ROOT_DIR)/log
 LOG_FILE = $(LOG_DIR)/$(APP_NAME).log
+LOG_FILE_BUILD = $(LOG_DIR)/build-$(APP_NAME).log
 LOG_CONFIG = $(ROOT_DIR)/logrotate.conf
 LOG_STATUS = $(LOG_DIR)/status
 
+REFLEX = $(BIN_DIR)/reflex
+REFLEX_DIR = $(ROOT_DIR)/reflex
+
 # check we have a couple of dependencies
 dependencies:
-	@command -v bin/reflex >/dev/null 2>&1 || { printf >&2 "bin/reflex is not installed, please run: make reflex\n"; exit 1; }
+	@command -v $(REFLEX) >/dev/null 2>&1 || { printf >&2 $(REFLEX)" is not installed, please run: make reflex\n"; exit 1; }
 
 # default targets to run when only running `make`
 default: dependencies test
@@ -24,8 +32,9 @@ kill:
 
 # run formatting tool and build
 go-build: dependencies go-clean
-	go mod vendor
-	go build -v -x -mod vendor -o $(APP)
+	logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
+	set -o pipefail; go mod vendor 2>&1 | tee --append $(LOG_FILE_BUILD)
+	set -o pipefail; go build -v -x -mod vendor -o $(APP) 2>&1 | tee --append $(LOG_FILE_BUILD)
 
 NotYetbuild2: $(GO_FILES)
 	go build -o $(APP)
@@ -40,7 +49,7 @@ start: go-build
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(LOG_DIR)
 	logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
-	$(APP) 2>&1 | tee --append $(LOG_FILE)
+	set -o pipefail; $(APP) 2>&1 | tee --append $(LOG_FILE)
 
 #sh -c "$(APP) & echo $$! > $(PID)"
 
@@ -61,15 +70,13 @@ test:
 reflex:
 	mkdir -p $(BIN_DIR)
 	git clone https://github.com/cespare/reflex.git --depth 1
-	cd $(ROOT_DIR)/reflex
-	go mod vendor
-	go build -v -x -mod vendor -o $(BIN_DIR)/reflex
-	cd $(ROOT_DIR)
-	rm -rf $(ROOT_DIR)/reflex
+	cd $(REFLEX_DIR) && go mod vendor
+	cd $(REFLEX_DIR) && go build -v -x -mod vendor -o $(REFLEX)
+	rm -rf $(REFLEX_DIR)
 
 # targets not associated with files
 # let's go to reserve rules names
-.PHONY: start run restart kill reflex 
+.PHONY: start run restart kill reflex go-build
 
 run:
 	bin/reflex --start-service -d none -r '\.go$$' -R '^vendor/' -R '^node_modules/' -- make start
