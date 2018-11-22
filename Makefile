@@ -21,6 +21,8 @@ REFLEX_DIR = $(ROOT_DIR)/reflex
 # check we have a couple of dependencies
 dependencies:
 	@command -v $(REFLEX) >/dev/null 2>&1 || { printf >&2 $(REFLEX)" is not installed, please run: make reflex\n"; exit 1; }
+	mkdir -p $(BIN_DIR)
+	mkdir -p $(LOG_DIR)
 
 # default targets to run when only running `make`
 default: dependencies test
@@ -46,8 +48,6 @@ NotYetstart:
 	$(APP) 2>&1 & echo $$! > $(PID)
 
 start: go-build
-	mkdir -p $(BIN_DIR)
-	mkdir -p $(LOG_DIR)
 	logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
 	set -o pipefail; $(APP) 2>&1 | tee --append $(LOG_FILE)
 
