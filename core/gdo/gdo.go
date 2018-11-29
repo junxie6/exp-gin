@@ -48,7 +48,7 @@ func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) *error {
 		return
 	}
 
-	defer func(err *error) {
+	defer func(tx *sqlx.DB, err *error) {
 		if tx == nil {
 			return
 		}
@@ -65,7 +65,7 @@ func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) *error {
 			// err is nil; if Commit returns error update err
 			*err = tx.Commit()
 		}
-	}(err)
+	}(tx, err)
 
 	*err = txFunc(tx)
 	return err
