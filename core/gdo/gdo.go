@@ -11,7 +11,7 @@ var (
 func Initialize() error {
 	var err error
 
-	DB, err = sqlx.Connect("mysql", "user=foo dbname=bar sslmode=disable")
+	DB, err = sqlx.Connect("mysql", "username:password@protocol(address)/dbname?param=value")
 
 	if err != nil {
 		return err
@@ -45,10 +45,10 @@ func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) *error {
 	err := new(error)
 
 	if tx, *err = db.Beginx(); *err != nil {
-		return
+		return err
 	}
 
-	defer func(tx *sqlx.DB, err *error) {
+	defer func(tx *sqlx.Tx, err *error) {
 		if tx == nil {
 			return
 		}

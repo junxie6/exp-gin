@@ -1,10 +1,11 @@
 package gdo_test
 
 import (
-//"fmt"
+	//"fmt"
+	"testing"
 )
 import (
-	"exp-gin/core/gdo"
+//"exp-gin/core/gdo"
 )
 
 func TestTransaction(t *testing.T) {
