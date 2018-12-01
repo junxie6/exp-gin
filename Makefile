@@ -38,8 +38,11 @@ go-build: dependencies
 	set -o pipefail; cd $(ROOT_DIR) && go mod vendor 2>&1 | tee --append $(LOG_FILE_BUILD)
 	set -o pipefail; cd $(ROOT_DIR) && go build -v -x -mod vendor -o $(APP) 2>&1 | tee --append $(LOG_FILE_BUILD)
 
+go-run:
+	cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
+
 go-test:
-	cd $(ROOT_DIR) && go test -v -mod vendor $(APP_NAME)/...
+	cd $(ROOT_DIR) && go test -v -mod vendor -race $(APP_NAME)/...
 
 go-test-cover:
 	cd $(ROOT_DIR) && go test -v -cover -mod vendor $(APP_NAME)/...
