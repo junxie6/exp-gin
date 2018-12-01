@@ -25,7 +25,7 @@ dependencies:
 	cd $(ROOT_DIR) && mkdir -p $(LOG_DIR)
 
 # default targets to run when only running `make`
-default: dependencies test
+default: dependencies
 
 # TODO: why 2>/dev/null ??
 kill:
@@ -53,9 +53,6 @@ go-tidy:
 go-clean:
 	go clean -i -x -modcache
 
-NotYetbuild2: $(GO_FILES)
-	go build -o $(APP)
-
 # start
 NotYetstart:
 	echo "@@@@@ Doing start"
@@ -65,14 +62,6 @@ NotYetstart:
 start: go-build
 	cd $(ROOT_DIR) && logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
 	set -o pipefail; cd $(ROOT_DIR) && $(APP) 2>&1 | tee --append $(LOG_FILE)
-
-#sh -c "$(APP) & echo $$! > $(PID)"
-
-# restart
-restart: kill go-build start
-
-test:
-	echo 'make test not implemented yet'
 
 # reflex
 reflex:
@@ -87,4 +76,4 @@ run:
 
 # targets not associated with files
 # let's go to reserve rules names
-.PHONY: start run restart kill reflex go-build
+.PHONY: start run kill reflex go-build
