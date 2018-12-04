@@ -35,8 +35,8 @@ kill:
 # run formatting tool and build
 go-build: dependencies
 	cd $(ROOT_DIR) && logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
-	set -o pipefail; cd $(ROOT_DIR) && go mod vendor 2>&1 | tee --append $(LOG_FILE_BUILD)
-	set -o pipefail; cd $(ROOT_DIR) && go build -v -x -mod vendor -o $(APP) 2>&1 | tee --append $(LOG_FILE_BUILD)
+	set -o pipefail; cd $(ROOT_DIR) && go mod vendor -v 2>&1 | tee --append $(LOG_FILE_BUILD)
+	set -o pipefail; cd $(ROOT_DIR) && go build -o $(APP) -v -x -mod vendor 2>&1 | tee --append $(LOG_FILE_BUILD)
 
 go-run:
 	cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
@@ -48,10 +48,10 @@ go-test-cover:
 	cd $(ROOT_DIR) && go test -v -cover -mod vendor $(APP_NAME)/...
 
 go-tidy:
-	cd $(ROOT_DIR) && go mod tidy
+	cd $(ROOT_DIR) && go mod tidy -v
 
 go-clean:
-	go clean -i -x -modcache
+	cd $(ROOT_DIR) && go clean -i -x -modcache
 
 # start
 NotYetstart:
@@ -65,9 +65,9 @@ start: go-build
 
 # reflex
 reflex:
-	mkdir -p $(BIN_DIR)
-	git clone https://github.com/cespare/reflex.git --depth 1
-	cd $(REFLEX_DIR) && go mod vendor
+	cd $(REFLEX_DIR) && mkdir -p $(BIN_DIR)
+	cd $(REFLEX_DIR) && git clone https://github.com/cespare/reflex.git --depth 1
+	cd $(REFLEX_DIR) && go mod vendor -v
 	cd $(REFLEX_DIR) && go build -v -x -mod vendor -o $(REFLEX)
 	rm -rf $(REFLEX_DIR)
 
