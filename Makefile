@@ -68,7 +68,7 @@ reflex:
 	cd $(REFLEX_DIR) && mkdir -p $(BIN_DIR)
 	cd $(REFLEX_DIR) && git clone https://github.com/cespare/reflex.git --depth 1
 	cd $(REFLEX_DIR) && go mod vendor -v
-	cd $(REFLEX_DIR) && go build -v -x -mod vendor -o $(REFLEX)
+	cd $(REFLEX_DIR) && go build -o $(REFLEX) -v -x -mod vendor
 	rm -rf $(REFLEX_DIR)
 
 run:
