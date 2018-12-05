@@ -33,11 +33,11 @@ func Initialize() error {
 //
 // 	return nil
 // })
-
 func Transaction(txFunc func(*sqlx.Tx) error) error {
 	return transaction(DB, txFunc)
 }
 
+// TransactionDB ...
 func TransactionDB(db *sqlx.DB, txFunc func(*sqlx.Tx) error) error {
 	return transaction(db, txFunc)
 }
