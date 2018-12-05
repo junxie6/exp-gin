@@ -26,29 +26,30 @@ func Initialize() error {
 // Example:
 // err = gdo.Transaction(func(tx *sqlx.Tx) error {
 // 	var err error
+//
 // 	if _, err = tx.NamedExec("UPDATE tb SET Changed = NOW() WHERE ID = :ID", map[string]interface{}{"ID": 1}); err != nil {
 // 		return err
 // 	}
+//
 // 	return nil
 // })
 
 func Transaction(txFunc func(*sqlx.Tx) error) error {
-	return *(transaction(DB, txFunc))
+	return transaction(DB, txFunc)
 }
 
 func TransactionDB(db *sqlx.DB, txFunc func(*sqlx.Tx) error) error {
-	return *(transaction(db, txFunc))
+	return transaction(db, txFunc)
 }
 
-func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) *error {
+func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) (err error) {
 	var tx *sqlx.Tx
-	err := new(error)
 
-	if tx, *err = db.Beginx(); *err != nil {
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 
-	defer func(tx *sqlx.Tx, err *error) {
+	defer func(tx *sqlx.Tx, e *error) {
 		if tx == nil {
 			return
 		}
@@ -58,15 +59,14 @@ func transaction(db *sqlx.DB, txFunc func(*sqlx.Tx) error) *error {
 
 			// re-throw panic after Rollback
 			panic(p)
-		} else if *err != nil {
+		} else if *e != nil {
 			// err is non-nil; don't change it
 			tx.Rollback()
 		} else {
 			// err is nil; if Commit returns error update err
-			*err = tx.Commit()
+			*e = tx.Commit()
 		}
-	}(tx, err)
+	}(tx, &err)
 
-	*err = txFunc(tx)
-	return err
+	return txFunc(tx)
 }
