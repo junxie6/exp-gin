@@ -41,11 +41,12 @@ go-build: dependencies
 go-run:
 	cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
 
+# NOTE: -count 1 to disable go test cache
 go-test:
-	cd $(ROOT_DIR) && go test -v -mod vendor -race $(APP_NAME)/...
+	cd $(ROOT_DIR) && go test -v -count 1 -mod vendor -race $(APP_NAME)/...
 
 go-test-cover:
-	cd $(ROOT_DIR) && go test -v -cover -mod vendor $(APP_NAME)/...
+	cd $(ROOT_DIR) && go test -v -count 1 -cover -mod vendor $(APP_NAME)/...
 
 go-tidy:
 	cd $(ROOT_DIR) && go mod tidy -v
