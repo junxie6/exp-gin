@@ -17,6 +17,11 @@ func Initialize() error {
 		return err
 	}
 
+	// TODO: move setting to config
+	DB.SetMaxOpenConns(1000)
+	DB.SetMaxIdleConns(300)
+	DB.SetConnMaxLifetime(0)
+
 	return err
 }
 
