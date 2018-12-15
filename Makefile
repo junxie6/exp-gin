@@ -39,20 +39,25 @@ go-build: dependencies
 	set -o pipefail; cd $(ROOT_DIR) && go build -o $(APP) -v -x -mod vendor 2>&1 | tee --append $(LOG_FILE_BUILD)
 
 go-run:
-	cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
+	set -o pipefail; cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
 
 # NOTE: -count 1 to disable go test cache
 go-test:
-	cd $(ROOT_DIR) && go test -v -count 1 -mod vendor -race $(APP_NAME)/...
+	set -o pipefail; cd $(ROOT_DIR) && go test -v -count 1 -mod vendor -race $(APP_NAME)/...
 
 go-test-cover:
-	cd $(ROOT_DIR) && go test -v -count 1 -cover -mod vendor $(APP_NAME)/...
+	set -o pipefail; cd $(ROOT_DIR) && go test -v -count 1 -cover -mod vendor $(APP_NAME)/...
 
 go-tidy:
-	cd $(ROOT_DIR) && go mod tidy -v
+	set -o pipefail; cd $(ROOT_DIR) && go mod tidy -v
 
 go-clean:
-	cd $(ROOT_DIR) && go clean -i -x -modcache
+	set -o pipefail; cd $(ROOT_DIR) && go clean -i -x -modcache
+
+install-go:
+	set -o pipefail; sudo -- sh -c 'rm -rf /usr/local/go \
+		&& curl -L "https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz" -o go.tar.gz \
+		&& tar -zxvf go.tar.gz -C /usr/local'
 
 # start
 NotYetstart:
