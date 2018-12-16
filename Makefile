@@ -65,7 +65,8 @@ run:
 install-go:
 	set -o pipefail; sudo -- sh -c 'rm -rf /usr/local/go \
 		&& curl -L "https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz" -o go.tar.gz \
-		&& tar -zxvf go.tar.gz -C /usr/local'
+		&& tar -zxvf go.tar.gz -C /usr/local \
+		&& rm -f go.tar.gz'
 
 # start
 NotYetstart:
