@@ -1,4 +1,5 @@
 SHELL = /bin/bash
+#SHELL = /bin/bash -o pipefail
 
 PID = ./app.pid
 GO_FILES = $(wildcard *.go)
@@ -41,7 +42,7 @@ go-build: dependencies
 go-run:
 	set -o pipefail; cd $(ROOT_DIR) && go run -v -mod vendor -race main.go
 
-# NOTE: -count 1 to disable go test cache
+# NOTE: -count 1 to disable go test cache.
 go-test:
 	set -o pipefail; cd $(ROOT_DIR) && go test -v -count 1 -mod vendor -race $(APP_NAME)/...
 
@@ -54,6 +55,13 @@ go-tidy:
 go-clean:
 	set -o pipefail; cd $(ROOT_DIR) && go clean -i -x -modcache
 
+start: go-build
+	cd $(ROOT_DIR) && logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
+	set -o pipefail; cd $(ROOT_DIR) && $(APP) 2>&1 | tee --append $(LOG_FILE)
+
+run:
+	set -o pipefail; cd $(ROOT_DIR) && bin/reflex --start-service -d none -r '\.go$$' -R '^vendor/' -R '^node_modules/' -- make start
+
 install-go:
 	set -o pipefail; sudo -- sh -c 'rm -rf /usr/local/go \
 		&& curl -L "https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz" -o go.tar.gz \
@@ -65,20 +73,13 @@ NotYetstart:
 	rm -f $(PID)
 	$(APP) 2>&1 & echo $$! > $(PID)
 
-start: go-build
-	cd $(ROOT_DIR) && logrotate -v --state $(LOG_STATUS) $(LOG_CONFIG)
-	set -o pipefail; cd $(ROOT_DIR) && $(APP) 2>&1 | tee --append $(LOG_FILE)
-
 # reflex
 reflex:
-	cd $(REFLEX_DIR) && mkdir -p $(BIN_DIR)
-	cd $(REFLEX_DIR) && git clone https://github.com/cespare/reflex.git --depth 1
-	cd $(REFLEX_DIR) && go mod vendor -v
-	cd $(REFLEX_DIR) && go build -o $(REFLEX) -v -x -mod vendor
+	set -o pipefail; cd $(REFLEX_DIR) && mkdir -p $(BIN_DIR)
+	set -o pipefail; cd $(REFLEX_DIR) && git clone https://github.com/cespare/reflex.git --depth 1
+	set -o pipefail; cd $(REFLEX_DIR) && go mod vendor -v
+	set -o pipefail; cd $(REFLEX_DIR) && go build -o $(REFLEX) -v -x -mod vendor
 	rm -rf $(REFLEX_DIR)
-
-run:
-	cd $(ROOT_DIR) && bin/reflex --start-service -d none -r '\.go$$' -R '^vendor/' -R '^node_modules/' -- make start
 
 # targets not associated with files
 # let's go to reserve rules names
